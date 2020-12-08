@@ -17,5 +17,9 @@ setup(
     author_email='martinzurita1@gmail.com',
     license='MIT',
     classifiers=classifiers,
-    install_requires=['azure-cosmosdb-table']
+    install_requires=[
+        'azure-cosmosdb-table', 
+        'pandas'
+    ],
+    keywords=['Pandas', 'Azure', 'NoSQL', 'Data']
 )
