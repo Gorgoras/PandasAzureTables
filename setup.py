@@ -11,6 +11,7 @@ setup(
     packages=find_packages(),
     version='0.0.2',
     download_url='https://github.com/Gorgoras/PandasAzureTables/archive/v0.0.2.tar.gz',
+    url='https://github.com/Gorgoras/PandasAzureTables',
     description='Easy Azure table storage into Pandas dataframe',
     long_description=open('README.md').read() + '\n\n' + open('CHANGELOG.txt').read(),
     long_description_content_type="text/markdown",
