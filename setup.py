@@ -9,8 +9,8 @@ classifiers = [
 setup(
     name='pdAzTables',
     packages=find_packages(),
-    version='0.0.2',
-    download_url='https://github.com/Gorgoras/PandasAzureTables/archive/v0.0.2.tar.gz',
+    version='0.0.3',
+    download_url='https://github.com/Gorgoras/PandasAzureTables/archive/v0.0.3.tar.gz',
     url='https://github.com/Gorgoras/PandasAzureTables',
     description='Easy Azure table storage into Pandas dataframe',
     long_description=open('README.md').read() + '\n\n' + open('CHANGELOG.txt').read(),

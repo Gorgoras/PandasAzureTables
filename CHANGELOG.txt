@@ -8,3 +8,7 @@ Change Log
 0.0.2 (08/12/2020)
 -------------------
 - Added keywords, still giving this some form.
+
+0.0.3 (08/12/2020)
+-------------------
+- Added Manifest so building from source doesnt fail.
