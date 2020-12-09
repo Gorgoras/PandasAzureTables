@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+0.0.5 (09/12/2020)
+-------------------
+- Added columns and filter parameters to get_table.
+
+
 0.0.4 (08/12/2020)
 -------------------
 - Added list_tables method.

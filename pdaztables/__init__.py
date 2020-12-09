@@ -36,7 +36,7 @@ class AzTable():
             elif sas_token:
                 self.table_service = TableService(account_name=account_name, sas_token=sas_token)
 
-    def get_table(self, table_name, n_rows=None):
+    def get_table(self, table_name, n_rows=None, columns=None, filter_query=None):
         """Gets a table from ADLS and returns a Pandas DataFrame
 
         Args:
@@ -44,12 +44,18 @@ class AzTable():
                 Name of the table in the data lake's table storage.
             n_rows : int
                 Number of rows to get from the table (will get first N rows).
+            columns : list
+                List of columns to get from the table.
+            filter : String
+                Returns only entities that satisfy the specified filter. Note that 
+            no more than 15 discrete comparisons are permitted within a $filter 
+            string.
 
         Returns:
             Pandas.DataFrame: DataFrame containing the table data.
         """
-
-        return pandas.DataFrame(self.__get_data_from_table_storage_table(self.table_service, table_name, n_rows))
+        cols = ','.join(columns)
+        return pandas.DataFrame(self.__get_data_from_table_storage_table(self.table_service, table_name, n_rows, cols, filter_query))
 
     def list_tables(self):
         """Get a list of table names in the table service.
@@ -65,10 +71,10 @@ class AzTable():
 
         return ret
 
-    def __get_data_from_table_storage_table(self, table_service, table_name, n_rows):
+    def __get_data_from_table_storage_table(self, table_service, table_name, n_rows, columns, filter_query):
         """ Retrieve data from Table Storage """
 
         SOURCE_TABLE = table_name
-        for record in table_service.query_entities(SOURCE_TABLE, num_results=n_rows
+        for record in table_service.query_entities(SOURCE_TABLE, num_results=n_rows, select=columns, filter=filter_query
         ):
             yield record
