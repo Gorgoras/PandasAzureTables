@@ -1,5 +1,8 @@
 from azure.cosmosdb.table.tableservice import TableService
+from azure.cosmosdb.table.tablebatch import TableBatch
 import pandas
+import time
+import sys, os
 
 class AzTable():
     """
@@ -54,7 +57,9 @@ class AzTable():
         Returns:
             Pandas.DataFrame: DataFrame containing the table data.
         """
-        cols = ','.join(columns)
+        cols = None
+        if(columns):
+            cols = ','.join(columns)
         return pandas.DataFrame(self.__get_data_from_table_storage_table(self.table_service, table_name, n_rows, cols, filter_query))
 
     def list_tables(self):
@@ -71,6 +76,73 @@ class AzTable():
 
         return ret
 
+    def set_table(self, df, table_name, should_create=False):
+        """Upload a Pandas DataFrame to a table from ADLS.
+        
+        Args:
+            df : Pandas.DataFrame
+                DataFrame to upload.
+            table_name : String
+                Name of the table to upload to.
+            should_create : Bool
+                Set to true if you want the table to be created
+                if it doesnt exist.
+
+        Returns:
+            Bool: True or False if it was able do the upload or not.
+        """
+        # convert every column to string to avoid errors on data types
+        df = df.astype(str)
+        
+        # variable to check if table exists (or was created)
+        exists = False
+
+        # This line is here to supress an error thrown by Microsoft's library
+        # which always throws an error when a table doesn't exist.
+        # I reported the bug in this issue: 
+        # https://github.com/Azure/azure-cosmos-table-python/issues/57
+        sys.stderr = open(os.devnull, "w")
+
+        if(self.table_service.exists(table_name)):
+            exists = True
+        elif (should_create):            
+            self.table_service.create_table(table_name)
+            time.sleep(10)
+            exists = True
+
+        # once checked, go back to regular error reports
+        sys.stderr = sys.__stderr__
+
+        # if dataframe has multiple partitions, we need to create a Batch for
+        # each partition.
+        if('PartitionKey' in df.columns):
+            has_partitions = True
+        else:
+            has_partitions = False
+
+        if(exists):
+            if(has_partitions):
+                part_keys = df.PartitionKey.unique()
+                for i in part_keys:
+                    print(i)
+                    df_to_insert = df.loc[df['PartitionKey'] == i]
+                    batch = TableBatch()
+                    for i in range(0, len(df_to_insert)):
+                        batch.insert_entity(dict(df_to_insert.iloc[i]))
+                    self.table_service.commit_batch(table_name, batch)
+                return True
+            else:
+                batch = TableBatch()
+                for i in range(0, len(df)):
+                    batch.insert_entity(dict(df.iloc[i]))
+                self.table_service.commit_batch(table_name, batch)
+                return True
+        else:
+            return False
+
+ 
+
+
     def __get_data_from_table_storage_table(self, table_service, table_name, n_rows, columns, filter_query):
         """ Retrieve data from Table Storage """
 
@@ -78,3 +150,5 @@ class AzTable():
         for record in table_service.query_entities(SOURCE_TABLE, num_results=n_rows, select=columns, filter=filter_query
         ):
             yield record
+
+
